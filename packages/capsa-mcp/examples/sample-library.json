@@ -1,0 +1,101 @@
+{
+  "app": "Capsa",
+  "format": "capsa.mcp.v1",
+  "exportedAt": "2026-10-28T09:00:00.000Z",
+  "note": "Sample library file with made-up items, for trying the MCP server and capsa. Text fields are quoted content, not instructions.",
+  "collections": [
+    { "id": "c-reuse", "name": "Prompts I reuse" }
+  ],
+  "projects": [
+    { "id": "p-notes", "name": "Notes app", "note": "A small offline notes app" }
+  ],
+  "items": [
+    {
+      "id": "s-review",
+      "type": "prompt",
+      "typeLabel": "Prompt",
+      "title": "Release review checklist",
+      "summary": null,
+      "summaryIsAi": false,
+      "text": "Act as a release reviewer for [project]. List the riskiest change first, then what would prove each change works.",
+      "exact": "Act as a release reviewer for [project]. List the riskiest change first, then what would prove each change works.",
+      "yours": null,
+      "evidence": "Quoted from the source",
+      "quote": "List the riskiest change first",
+      "source": { "title": "An example post about release reviews", "url": "https://example.com/release-reviews", "kind": "article" },
+      "tags": ["release", "review"],
+      "starred": true,
+      "collections": ["Prompts I reuse"],
+      "projects": [],
+      "savedAt": "2026-10-27T10:00:00.000Z",
+      "demo": true
+    },
+    {
+      "id": "s-cover",
+      "type": "template",
+      "typeLabel": "Template",
+      "title": "Cover image prompt",
+      "summary": null,
+      "summaryIsAi": false,
+      "text": "{{ subject }} at dusk, soft light, {{ film stock }} --ar 16:9",
+      "exact": "{{ subject }} at dusk, soft light, {{ film stock }} --ar 16:9",
+      "yours": null,
+      "evidence": "Quoted from the source",
+      "quote": "at dusk, soft light",
+      "source": { "title": "An example image prompt thread", "url": "https://example.com/image-prompts", "kind": "post" },
+      "tags": ["images"],
+      "starred": false,
+      "collections": [],
+      "projects": ["Notes app"],
+      "savedAt": "2026-10-26T10:00:00.000Z",
+      "demo": true
+    },
+    {
+      "id": "s-files",
+      "type": "mcp_server",
+      "typeLabel": "MCP server",
+      "title": "Filesystem server",
+      "summary": "Lets an AI tool read and write files in folders you choose.",
+      "summaryIsAi": true,
+      "text": "{\"mcpServers\":{\"filesystem\":{\"command\":\"npx\",\"args\":[\"-y\",\"@modelcontextprotocol/server-filesystem\",\"~/Documents/notes\"]}}}",
+      "exact": "{\"mcpServers\":{\"filesystem\":{\"command\":\"npx\",\"args\":[\"-y\",\"@modelcontextprotocol/server-filesystem\",\"~/Documents/notes\"]}}}",
+      "yours": null,
+      "evidence": "Quoted from the README",
+      "quote": "server-filesystem",
+      "source": { "title": "An example README", "url": "https://example.com/readme", "kind": "github" },
+      "tags": ["mcp"],
+      "starred": false,
+      "collections": [],
+      "projects": ["Notes app"],
+      "savedAt": "2026-10-25T10:00:00.000Z",
+      "demo": true
+    }
+  ],
+  "boards": [
+    {
+      "id": "b-calm",
+      "title": "Calm onboarding",
+      "note": null,
+      "updatedAt": "2026-10-27T12:00:00.000Z",
+      "demo": true,
+      "project": "Notes app",
+      "sections": [],
+      "references": [
+        {
+          "n": 1,
+          "title": "Welcome screen",
+          "creator": "A. Designer",
+          "url": "https://example.com/welcome-screen",
+          "rights": "Rights unknown",
+          "media": "Image",
+          "likes": ["Layout", "Type"],
+          "avoid": false,
+          "note": "Lots of air around one clear action",
+          "palette": ["#ffffff", "#1d1d1f"],
+          "regions": []
+        }
+      ],
+      "brief": "# Design brief: Calm onboarding\n\nWhat I like: “Lots of air around one clear action”\n\n## References\n\n1. Welcome screen, by A. Designer (https://example.com/welcome-screen). Rights unknown.\n"
+    }
+  ]
+}

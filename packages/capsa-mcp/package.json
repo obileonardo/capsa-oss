@@ -1,0 +1,46 @@
+{
+  "name": "capsa-mcp",
+  "version": "0.2.0",
+  "description": "Read-only local MCP server for a Capsa library file (no network, no dependencies)",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "prompts",
+    "skills",
+    "local-first",
+    "capsa"
+  ],
+  "type": "module",
+  "bin": {
+    "capsa-mcp": "server.mjs",
+    "librarykit-mcp": "server.mjs"
+  },
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "files": [
+    "server.mjs",
+    "library.mjs",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obileonardo/capsa-oss.git",
+    "directory": "packages/capsa-mcp"
+  },
+  "author": "Elvis Obi",
+  "homepage": "https://github.com/obileonardo/capsa-oss#readme",
+  "bugs": {
+    "url": "https://github.com/obileonardo/capsa-oss/issues"
+  },
+  "exports": {
+    "./library.mjs": "./library.mjs",
+    "./package.json": "./package.json"
+  }
+}

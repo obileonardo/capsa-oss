@@ -1,0 +1,10 @@
+{
+  "name": "capsa",
+  "private": true,
+  "description": "Capsa's public source: the local MCP server and the capsa command line",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node packages/capsa-mcp/test.mjs && node packages/capsa/test.mjs"
+  }
+}

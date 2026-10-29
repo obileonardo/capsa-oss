@@ -1,0 +1,7 @@
+# Keeps the pinned action SHAs in the workflows current. The packages have no npm dependencies.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

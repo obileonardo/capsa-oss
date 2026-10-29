@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+.DS_Store
+*.log
+
+# Secrets: never commit
+.env
+.env.*
+*.pem
+*.key
+*.p12
+
+# Your own library file
+capsa-library.json

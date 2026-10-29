@@ -1,0 +1,42 @@
+{
+  "name": "capsa-cli",
+  "version": "0.1.0",
+  "description": "Capsa in your terminal: search, list, show, render and copy from an exported library file (read-only, offline, no third-party dependencies)",
+  "keywords": [
+    "cli",
+    "prompts",
+    "skills",
+    "local-first",
+    "capsa"
+  ],
+  "type": "module",
+  "bin": {
+    "capsa": "capsa.mjs",
+    "lk": "capsa.mjs"
+  },
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "files": [
+    "capsa.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obileonardo/capsa-oss.git",
+    "directory": "packages/capsa"
+  },
+  "author": "Elvis Obi",
+  "homepage": "https://github.com/obileonardo/capsa-oss#readme",
+  "bugs": {
+    "url": "https://github.com/obileonardo/capsa-oss/issues"
+  },
+  "dependencies": {
+    "capsa-mcp": "^0.2.0"
+  }
+}

@@ -1,0 +1,44 @@
+name: Bug report
+description: The MCP server or capsa doesn't work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Security problems don't belong here; follow SECURITY.md instead.
+        Please use the sample library or made-up data. Don't paste your own library, tokens or other personal data.
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - MCP server (packages/capsa-mcp)
+        - capsa command line (packages/capsa)
+        - The library file format
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The command or MCP request, and the client if it's the server (Claude Code, Codex, Cursor, VS Code...).
+      placeholder: |
+        1. node packages/capsa/capsa.mjs search release --file packages/capsa-mcp/examples/sample-library.json
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "`node -v`, your operating system, and the release or commit"
+    validations:
+      required: true
