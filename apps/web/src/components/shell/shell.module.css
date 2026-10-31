@@ -1,0 +1,438 @@
+/* Shell, direction "1 + 3" (Elvis, 22 Oct; design-references/mockups/shell-picks.html round 5): Atelier sidebar on a warm
+ * canvas (no full-width window bar), white inset main panel (radius 14) that scrolls on its own, and a right-hand slot
+ * only the Library fills. No blue in the sidebar: the active item is a grey pill. Narrow: document scroll, drawer. */
+.app {
+  --side-w: 252px; --aside-w: 0px;
+  --side-ink: #2d2d2b; --side-icon: #77776f; --side-mute: #64645e; --side-hover: #ececea; --side-active: #e6e6e2; --side-line: #e6e6e3; --panel-line: #ebebe8;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "side main aside";
+  height: 100vh; height: 100dvh; background: var(--bg);
+}
+:global([data-theme="dark"]) .app {
+  --side-ink: #e4e4e7; --side-icon: #8e8e96; --side-mute: #9a9aa2; --side-hover: #18181b; --side-active: #232327; --side-line: #242428; --panel-line: var(--line);
+}
+/* The Library's panel: a 482 px column (462 px panel + margins) on wide screens, 30% narrower than before (Elvis, 25 Oct), shrinking with the window. */
+.app:has(.aside:not(:empty)) { --aside-w: calc(clamp(256px, (100vw - var(--side-w) - 528px) * .7, 462px) + 20px); }
+
+.main {
+  grid-area: main; min-width: 0; min-height: 0; overflow: auto; margin: 10px 10px 10px 0; background: var(--surface);
+  border: 1px solid var(--panel-line); border-radius: var(--r-2xl); box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  --main-h: calc(100dvh - 22px); /* the scroll area's height, for screens that size to the viewport */
+}
+.app:has(.aside:not(:empty)) .main { margin-right: 0; }
+.aside { grid-area: aside; min-height: 0; display: flex; }
+.aside:empty { display: none; }
+
+/* ---------- Atelier sidebar ---------- */
+.sidebar { grid-area: side; width: var(--side-w); min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 1px; padding: 12px; background: var(--bg); }
+.lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ws { position: relative; display: flex; align-items: center; gap: 4px; padding: 0 2px 6px 0; flex: none; min-width: 0; }
+.wsWrap { position: relative; min-width: 0; }
+.wsBtn { display: flex; align-items: center; gap: 9px; height: 34px; max-width: 100%; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--side-ink); cursor: pointer; }
+.wsBtn:hover, .wsBtn[aria-expanded="true"] { background: var(--side-hover); }
+.wsBtn b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; font-weight: 600; }
+.wsChev { flex: none; color: var(--side-mute); margin-right: -6px; } /* its ink sits 6px in, as the library tile does on the left */
+/* the Capsa mark, bare (no tile): the case in the sidebar ink, the tag in its red */
+.logo { width: 24px; height: 24px; color: var(--side-ink); }
+.wsi { position: relative; width: 28px; height: 28px; flex: none; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--side-icon); cursor: pointer; }
+.wsi:hover, .wsi[aria-expanded="true"] { background: var(--side-hover); color: var(--side-ink); }
+
+.wdot { position: absolute; top: 5px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--sel); box-shadow: 0 0 0 2px var(--bg); }
+.popLeft { top: calc(100% + 4px); left: 0; min-width: 200px; }
+.popRight { top: calc(100% + 4px); right: 0; width: 280px; }
+.popUp { position: fixed; bottom: 56px; left: 12px; width: 260px; } /* fixed: the scrolling sidebar would clip it */
+.popHead { margin: 0; display: flex; align-items: center; min-height: var(--pop-row-h); padding: 0 var(--pop-row-x); color: var(--ink-3); font-size: 0.75rem; font-weight: 500; }
+.menu a.popItem, .popItem { height: auto !important; min-height: 40px; padding: 6px var(--pop-row-x) !important; flex-direction: column; align-items: flex-start !important; gap: 0 !important; }
+.popTitle { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.popSub { color: var(--ink-3); font-size: 0.75rem; }
+.keyRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: var(--pop-row-h); padding: 0 var(--pop-row-x); font-size: 0.8125rem; }
+.searchBox { flex: none; margin: 2px 0 8px; }
+.searchSlot:empty { display: none; }
+.searchSlot:not(:empty) + .searchDefault { display: none; }
+.omniText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.row {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: var(--row-nav); flex: none; padding: 0 9px; border: 0; border-radius: var(--r-sm);
+  background: transparent; color: var(--side-ink); font-size: 0.84375rem; text-align: left; white-space: nowrap; overflow: hidden; cursor: pointer;
+}
+.row svg { flex: none; color: var(--side-icon); }
+.row:hover { background: var(--side-hover); }
+.row[aria-current="page"] { background: var(--side-active); font-weight: 500; }
+.row[data-static="true"] { cursor: default; }
+.row[data-static="true"]:hover { background: transparent; }
+.rowText { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cnt, .cntMuted { margin-left: auto; padding-left: 8px; color: var(--side-mute); font-size: 0.75rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+.cntMuted { font-size: 0.6875rem; }
+.tile { width: 18px; height: 18px; flex: none; display: grid; place-items: center; border-radius: 5px; color: #fff; font-size: 0.625rem; font-weight: 600; }
+.gap { height: 6px; flex: none; }
+.grow { flex: 1 1 auto; min-height: 16px; }
+.demoRow { display: flex; padding: 0 9px; flex: none; }
+.sec { display: flex; flex-direction: column; gap: 1px; flex: none; }
+.sh { display: flex; align-items: center; gap: 2px; height: 26px; margin-top: 14px; padding: 0 5px 0 9px; border-radius: 7px; color: var(--side-mute); font-size: 0.75rem; font-weight: 500; }
+.sh:hover, .sh:focus-within { background: var(--side-hover); }
+.shLabel { color: inherit; }
+a.shLabel { flex: 1; align-self: stretch; display: flex; align-items: center; min-width: 0; } /* the whole header opens the page, like a nav row; the row's hover is the only hover */
+.shBtn { width: 22px; height: 22px; display: grid; place-items: center; border: 0; border-radius: 5px; background: transparent; color: var(--side-mute); cursor: pointer; opacity: 0; }
+.shBtn:hover { color: var(--side-ink); background: var(--side-active); }
+.shBtn svg { transition: rotate var(--dur-1) var(--ease); }
+.sh:hover .shBtn, .sh:focus-within .shBtn, .shBtn[data-collapsed="true"] { opacity: 1; }
+.shBtn[data-collapsed="true"] svg { rotate: -90deg; }
+.ph { margin: 0; padding: 2px 9px 4px; color: var(--side-mute); font-size: 0.78125rem; font-style: italic; }
+.newRow { padding: 2px 0 4px; }
+.newRow :global(.input) { height: var(--row-nav); min-height: var(--row-nav); }
+.ai { width: 16px; flex: none; text-align: center; color: #c2410c; font-size: 0.9375rem; line-height: 1; }
+:global([data-theme="dark"]) .ai { color: #f5a07a; }
+.foot { display: flex; align-items: center; gap: 2px; flex: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--side-line); }
+.fi { width: var(--row-nav); height: var(--row-nav); display: grid; place-items: center; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--side-mute); cursor: pointer; }
+.fi:hover, .fi[aria-current="page"], .fi[aria-expanded="true"] { background: var(--side-hover); color: var(--side-ink); }
+
+.size { color: var(--side-mute); font-size: 0.71875rem; white-space: nowrap; }
+.saveErr { color: var(--danger); font-size: 0.71875rem; }
+
+/* ---------- icons (round 8): nav and actions mid grey, where you are in ink, supporting detail light grey ---------- */
+.row svg { color: var(--ic-2); }
+.row[aria-current="page"] svg { color: var(--ic-1); }
+.row svg.ic3, .ic3 { color: var(--ic-3); }
+.wsi { color: var(--ic-2); }
+.wsi:hover, .wsi[aria-expanded="true"] { color: var(--ic-1); }
+.wsChev { color: var(--ic-3); }
+.shBtn { --pi: 14px; color: var(--ic-3); }
+.fi { color: var(--ic-3); }
+.fi:hover, .fi[aria-current="page"], .fi[aria-expanded="true"] { color: var(--ic-1); }
+.menuBtn svg { color: var(--ic-2); }
+
+/* command palette */
+.pal { width: min(640px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-2xl); box-shadow: var(--shadow-3); overflow: hidden; display: flex; flex-direction: column; max-height: min(560px, calc(100vh - 120px)); }
+.palBackdrop::backdrop { background: rgb(17 17 19 / 0.18); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.palTop { display: flex; align-items: center; gap: 8px; padding: 8px var(--pop-inset); border-bottom: 1px solid var(--line); }
+.palTop svg { color: var(--ink-3); flex: none; }
+.palInput { flex: 1; border: 0; outline: none; background: transparent; font-size: var(--fs-lg); padding: 4px 0; color: var(--ink); }
+.palInput::placeholder { color: var(--ink-4); }
+.scopes { display: flex; gap: 4px; padding: 8px 12px 4px; }
+.palList { overflow-y: auto; padding: 4px var(--pop-pad) var(--pop-pad); }
+.palGroup { font-size: 0.71875rem; font-weight: 560; color: var(--ink-3); padding: 10px 8px 4px; }
+.palItem { display: flex; align-items: center; gap: 10px; height: var(--row); padding: 0 8px; border-radius: var(--r-sm); cursor: pointer; font-size: var(--fs-sm); color: var(--ink); width: 100%; border: 0; background: transparent; text-align: left; }
+.palItem svg { color: var(--ink-3); flex: none; }
+.palItem[data-active="true"] { background: var(--surface-3); }
+.palItem .sub { color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.palItem .typeCol { width: 92px; flex: none; color: var(--ink-3); font-size: var(--fs-xs); }
+.palItem .enter { margin-left: auto; color: var(--ink-3); font-size: var(--fs-xs); display: none; align-items: center; gap: 4px; }
+.palItem[data-active="true"] .enter { display: inline-flex; }
+.palFoot { display: flex; gap: 16px; align-items: center; padding: 8px var(--pop-inset); border-top: 1px solid var(--line); background: var(--surface-2); color: var(--ink-3); font-size: var(--fs-xs); }
+.palFoot span { display: inline-flex; gap: 5px; align-items: center; }
+@media (max-width: 720px) { .palFoot > span:nth-child(-n+4) { display: none; } } /* key hints mean nothing on a phone, and overflowed it */
+.palEmpty { padding: 28px 12px; text-align: center; color: var(--ink-3); }
+
+/* ---------- narrow: document scroll, sidebar as a drawer ---------- */
+.menuBtn { display: none; }
+.scrim { position: fixed; inset: 0; background: var(--overlay); z-index: 45; }
+@media (max-width: 860px) {
+  .app { display: block; height: auto; min-height: 100vh; }
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; width: 280px; z-index: 50; transform: translateX(-100%); visibility: hidden;
+    transition: transform var(--dur-2) var(--ease), visibility 0s linear var(--dur-2);
+  }
+  .sidebar { width: 280px; }
+  .sidebar[data-open="true"] { transform: none; visibility: visible; box-shadow: var(--shadow-3); transition: transform var(--dur-2) var(--ease); }
+  .main { margin: 0; border: 0; border-radius: 0; box-shadow: none; overflow: visible; min-height: 100vh; --main-h: 100vh; }
+  /* the Ask face's room at the end of every page (#85): the panel pads by it and the pages that size to the screen give it
+   * back, so a short page still doesn't scroll and a long one ends with its last control clear of the face */
+  .main { padding-bottom: var(--ask-room, 0px); --main-h: calc(100vh - var(--ask-room, 0px)); }
+  .aside { display: none; }
+  .menuBtn {
+    display: grid; place-items: center; position: fixed; left: 10px; bottom: 12px; z-index: 40; width: 40px; height: 40px; border-radius: var(--r-lg);
+    border: 1px solid var(--line-strong); background: var(--surface); box-shadow: var(--shadow-2); color: var(--ink); cursor: pointer;
+  }
+
+  /* Pages with their own sidebar toggle in the top bar (the Library) don't need the floating button. */
+  .app:has([data-own-nav-toggle]) .menuBtn { display: none; }
+}
+
+/* ---------- Stage 1: starred items and pinned tags ---------- */
+.tdot { width: 8px; height: 8px; flex: none; margin: 0 5px; border-radius: 50%; }
+.rowMore { color: var(--side-mute); font-size: 0.78125rem; }
+.pinRow { position: relative; display: flex; flex: none; }
+.pinRow .row { padding-right: 34px; }
+.unpin { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; cursor: pointer; opacity: 0; --pi: 14px; }
+.unpin svg { color: var(--ic-3); }
+.unpin:hover { background: var(--side-active); }
+.unpin:hover svg { color: var(--ic-1); }
+.pinRow:hover .unpin, .pinRow:focus-within .unpin { opacity: 1; }
+.pinRow:hover .cnt, .pinRow:focus-within .cnt { visibility: hidden; }
+@media (hover: none) { .unpin { opacity: 1; } }
+/* type colours for the starred rows' dots (the same values as the Library's) */
+.sidebar { --c-green: #16a34a; --c-teal: #0d9488; --c-sky: #0284c7; --c-violet: #7c3aed; --c-amber: #d97706; --c-orange: #ea580c; --c-pink: #db2777; --c-indigo: #4f46e5; --c-slate: #64748b; --c-yellow: #ca8a04; }
+/* The count on the active row sat at 4.2:1 on the grey pill (axe, found with a two-digit Inbox count); 5:1 now. */
+.row[aria-current="page"] .cnt { color: #5a5a55; }
+:global([data-theme="dark"]) .row[aria-current="page"] .cnt { color: #a8a8b0; }
+
+/* Stage 5: search results say where the words matched */
+.palLabel { flex: none; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palHint { flex: none; padding: 0 6px; border-radius: 5px; background: var(--surface-3); color: var(--ink-2); font-size: 0.71875rem; white-space: nowrap; }
+.palItem mark { background: #fde68a; color: inherit; border-radius: 2px; }
+/* the active row's grey text sat at 4.47:1 on the highlight; ink-2 passes */
+.palItem[data-active="true"] .sub, .palItem[data-active="true"] .typeCol, .palItem[data-active="true"] .enter { color: var(--ink-2); }
+
+/* ---------- Stage 9: notifications ---------- */
+.notes { position: fixed; top: 52px; left: 12px; right: auto; width: 380px; max-width: calc(100vw - 32px); max-height: min(560px, 75vh); overflow-y: auto; padding-top: 0; } /* fixed: the sidebar scrolls (overflow auto) and would clip it */
+@media (max-width: 720px) { .notes { position: fixed; top: 56px; left: 16px; right: 16px; width: auto; max-width: 400px; } }
+.popHeadRow { display: flex; align-items: center; gap: 8px; }
+.popHeadRow .popHead { flex: 1; }
+.popLink { height: 24px !important; padding: 0 var(--pop-row-x) !important; color: var(--link) !important; font-size: 0.75rem !important; }
+.popEmpty { margin: 0; padding: 4px var(--pop-row-x) 8px; color: var(--ink-3); font-size: 0.78125rem; line-height: 1.5; }
+.row[aria-current="page"] .cntMuted { color: #5a5a55; }
+:global([data-theme="dark"]) .row[aria-current="page"] .cntMuted { color: #a8a8b0; }
+
+/* Bookmarks: the item's type icon in its type colour, the title in ink; quieter than the main navigation */
+.bmRow { height: var(--row-nav); font-size: 0.8125rem; color: var(--side-ink); }
+.bmRow svg { --pi: 16px; }
+/* a collection or project lights up while a Library item is dragged over it */
+:global(html[data-drag-item]) .row[data-drop="true"] { background: var(--sel-soft); box-shadow: inset 0 0 0 1px var(--sel-line); color: var(--link); }
+.popLink:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- Deleted: the bin, last row above the footer, under Activity and Learn (the gap sits above Activity) ---------- */
+.deletedRow { margin-top: 0; }
+.row svg[data-ic="trash-2"] { color: var(--ic-2); }
+
+/* ---------- Collapsed: the icon rail (24 Oct; references S16 Pipedrive, Supabase, Snowflake, Canny, Magnific) ----------
+ * Wide screens only; phones keep the drawer. <html data-side="rail"> comes from the root layout script before paint.
+ * Every item keeps its left padding, so icons sit in one column at x = 29 and don't jump while the width animates. Labels
+ * are visually hidden, not removed, so each item keeps its accessible name; RailTip shows them on hover and focus. */
+@media (min-width: 861px) {
+  .sidebar { transition: width var(--dur-2) var(--ease); }
+  :global(html[data-side="rail"]) .app { --side-w: 58px; }
+  :global(html[data-side="rail"]) .sidebar { scrollbar-width: none; }
+  :global(html[data-side="rail"]) .sidebar::-webkit-scrollbar { display: none; }
+  :global(html[data-side="rail"]) .lbl,
+  :global(html[data-side="rail"]) .rowText,
+  :global(html[data-side="rail"]) .sidebar .cnt:not(.badge) { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  :global(html[data-side="rail"]) .row { position: relative; overflow: visible; }
+
+  /* workspace row: the library tile, then the bell under it */
+  :global(html[data-side="rail"]) .ws { flex-direction: column; align-items: stretch; gap: 2px; padding: 0 0 6px; }
+  :global(html[data-side="rail"]) .ws > :global(.spacer), :global(html[data-side="rail"]) .wsChev { display: none; }
+  :global(html[data-side="rail"]) .wsBtn { width: 100%; padding: 0 5px; }
+  :global(html[data-side="rail"]) .wsi { width: 34px; height: 32px; border-radius: 8px; }
+
+  /* search: the field becomes an icon that opens ⌘K (the Library's own field waits for the expanded sidebar) */
+  :global(html[data-side="rail"]) .searchBox { margin: 0 0 1px; }
+  :global(html[data-side="rail"]) .searchSlot { display: none; }
+  :global(html[data-side="rail"]) .searchSlot:not(:empty) + .searchDefault,
+  :global(html[data-side="rail"]) .searchDefault { display: flex; height: 32px; padding: 0 0 0 8px; border-color: transparent; background: transparent; box-shadow: none; }
+  :global(html[data-side="rail"]) .searchDefault:hover { background: var(--side-hover); }
+  :global(html[data-side="rail"]) .searchDefault > svg { color: var(--ic-2); }
+  :global(html[data-side="rail"]) .searchDefault :global(.kbd) { display: none; }
+  :global(html[data-side="rail"]) .omniText { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* Inbox's count: a small ink badge on the icon's top-right corner (never red: red is the mark, the primary action, focus) */
+  :global(html[data-side="rail"]) .badge {
+    position: absolute; top: 2px; left: 18px; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border-radius: 8px;
+    background: var(--side-ink); color: var(--bg) !important; box-shadow: 0 0 0 2px var(--bg);
+    font-size: 0.625rem; font-weight: 600; line-height: 1rem; text-align: center;
+  }
+  :global(html[data-side="rail"]) .row:hover .badge { box-shadow: 0 0 0 2px var(--side-hover); }
+  :global(html[data-side="rail"]) .row[aria-current="page"] .badge { box-shadow: 0 0 0 2px var(--side-active); }
+
+  /* sections: no headings; a hairline between areas, collections and projects; the rest stays in the expanded sidebar */
+  :global(html[data-side="rail"]) .sh,
+  :global(html[data-side="rail"]) .newRow,
+  :global(html[data-side="rail"]) .demoRow,
+  :global(html[data-side="rail"]) .rowMore,
+  :global(html[data-side="rail"]) .sec[data-rail="hide"] { display: none; }
+  :global(html[data-side="rail"]) .sec:not(:has(.row)) { display: none; }
+  :global(html[data-side="rail"]) .sec { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--side-line); }
+  :global(html[data-side="rail"]) .deletedRow { margin-top: 0; }
+
+  /* footer: the icons stack; the size moves into Storage's tooltip */
+  :global(html[data-side="rail"]) .foot { flex-direction: column; align-items: center; gap: 1px; }
+  :global(html[data-side="rail"]) .foot > :global(.spacer), :global(html[data-side="rail"]) .size { display: none; }
+  :global(html[data-side="rail"]) .fi { width: 34px; height: 32px; border-radius: 8px; }
+
+  /* menus opened from the rail open beside it (the 58 px sidebar would clip them) */
+  :global(html[data-side="rail"]) .popLeft { position: fixed; top: 12px; left: 66px; }
+  :global(html[data-side="rail"]) .notes { top: 12px; left: 66px; }
+  :global(html[data-side="rail"]) .popUp { left: 66px; bottom: 12px; }
+}
+.saveDot { width: 8px; height: 8px; margin: 8px 0 4px; border-radius: 50%; background: var(--danger); }
+
+/* the rail's tooltip (RailTip): ink on paper in light, paper on ink in dark, like the app's other tooltips */
+.tip {
+  position: fixed; z-index: 70; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 9px;
+  border-radius: 7px; background: var(--ink); color: var(--surface); font-size: 0.78125rem; font-weight: 500; white-space: nowrap; pointer-events: none;
+  box-shadow: var(--shadow-2); animation: tip-in var(--dur-1) var(--ease);
+}
+.tip :global(.kbd) { min-width: 0; height: 18px; padding: 0 5px; border: 0; background: rgb(255 255 255 / 0.16); color: inherit; font-size: 0.6875rem; }
+:global([data-theme="dark"]) .tip :global(.kbd) { background: rgb(0 0 0 / 0.1); }
+@keyframes tip-in { from { opacity: 0; transform: translate(-3px, -50%); } }
+@media (prefers-reduced-motion: reduce) { .sidebar, .tip { transition: none; animation: none; } }
+
+/* Settings sidebar: "Back to app" sits where the workspace row is, a little quieter than the sections below it */
+.backRow { margin-top: 2px; color: var(--side-mute, var(--ink-2)); }
+.backRow:hover { color: var(--side-ink, var(--ink)); }
+/* Settings sidebar group headings: the app's section heading, as a quiet label (not a link, so no hover) */
+.shStatic { padding-right: 9px; }
+.shStatic:hover, .shStatic:focus-within { background: transparent; }
+
+/* Track C (HLP-09): something new in What's new: the bell's dot, on the Help icon and its menu row */
+.fi:has(> .newDot) { position: relative; }
+.fi > .newDot { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--sel); box-shadow: 0 0 0 2px var(--bg); }
+.popUp a > .newDot { width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--sel); }
+
+/* ---------- Design review 25 Oct, item 2: the notifications panel ----------
+ * Header (title, Mark all read, settings), Today / Earlier groups, a kind glyph per row, relative time, the row's action,
+ * an unread dot and dismiss. References: Causal, Dovetail, Slite, Telescope. */
+.notesHead { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 4px; margin: 0 calc(-1 * var(--pop-pad)); padding: 8px var(--pop-pad) 6px calc(var(--pop-pad) + var(--pop-row-x)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.notesTitle { flex: 1; margin: 0; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; color: var(--ink); }
+:global(.menu) .notesBtn { height: 28px; gap: 6px; padding: 0 8px; color: var(--ink-2); font-size: 0.78125rem; font-weight: 500; flex: none; }
+:global(.menu) .notesBtn:hover { color: var(--ink); }
+:global(.menu) .notesIcon { width: 28px; padding: 0; justify-content: center; }
+.notesEmpty { display: grid; justify-items: center; gap: 4px; padding: 20px 8px 24px; color: var(--ink-2); font-size: 0.8125rem; }
+.notesEmpty b { font-weight: 600; }
+.noteGroup { display: grid; gap: 1px; }
+.noteGroupHead { margin: 0; padding: 10px var(--pop-row-x) 4px; color: var(--ink-3); font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+.note { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: start; column-gap: 12px; padding: 10px 36px 10px var(--pop-row-x); border-radius: var(--r-sm); }
+.note:hover, .note:focus-within { background: var(--surface-3); }
+.noteIcon { width: 28px; height: 28px; margin-top: -4px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); }
+.note[data-tone="warn"] .noteIcon { color: #b45309; }
+:global([data-theme="dark"]) .note[data-tone="warn"] .noteIcon { color: #f59e0b; }
+.noteBody { min-width: 0; display: grid; gap: 2px; }
+/* the link is the row: its hit area covers the whole row; Back up and Dismiss sit above it */
+:global(.menu) a.noteLink { position: static; display: grid; gap: 2px; height: auto; min-height: 0; padding: 0; background: transparent; border-radius: 0; color: var(--ink); }
+:global(.menu) a.noteLink::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+:global(.menu) a.noteLink:hover { background: transparent; }
+:global(.menu) a.noteLink:focus-visible { outline: none; }
+.note:has(a.noteLink:focus-visible) { box-shadow: inset 0 0 0 2px var(--accent); }
+.noteLink .popTitle { white-space: normal; font-size: 0.84375rem; line-height: 1.25rem; font-weight: 560; }
+.note:not([data-unread]) .noteLink .popTitle { font-weight: 400; color: var(--ink-2); }
+.noteLink .popSub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.78125rem; line-height: 1.125rem; color: var(--ink-2); }
+.noteMeta { display: flex; align-items: center; gap: 8px; min-height: 20px; color: var(--ink-3); font-size: 0.75rem; line-height: 1rem; font-variant-numeric: tabular-nums; }
+.noteAction, :global(.menu) .noteDo { color: var(--link); font-size: 0.75rem; line-height: 1rem; font-weight: 560; }
+.noteAction::before, :global(.menu) .noteDo::before { content: '·'; margin-right: 8px; color: var(--ink-3); font-weight: 400; }
+:global(.menu) .noteDo { position: relative; z-index: 1; height: 20px; min-height: 0; gap: 4px; padding: 0; background: transparent; --pi: 14px; }
+:global(.menu) .noteDo:hover { background: transparent; text-decoration: underline; }
+.noteDot { position: absolute; top: 17px; right: 16px; width: 7px; height: 7px; border-radius: 50%; background: var(--sel); }
+:global(.menu) .noteX { position: absolute; z-index: 1; top: 6px; right: 6px; width: 28px; height: 28px; padding: 0; justify-content: center; opacity: 0; color: var(--ink-3); }
+.note:hover .noteX, .note:focus-within .noteX, :global(.menu) .noteX:focus-visible { opacity: 1; }
+.note:hover .noteDot, .note:focus-within .noteDot { opacity: 0; }
+@media (hover: none) { :global(.menu) .noteX { opacity: 1; } .noteDot { right: 38px; } }
+
+/* ---------- Design review 25 Oct, item 1: libraries ---------- */
+.libTile { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 7px; background: var(--lib-bg); color: #fff; --pi: 14px; }
+.libTile[data-size="20"] { width: 20px; height: 20px; border-radius: 6px; --pi: 14px; }
+.libTile[data-size="32"] { width: 32px; height: 32px; border-radius: 9px; --pi: 16px; }
+.libTile svg { color: inherit !important; }
+.libTile[data-color="graphite"], .swatch[data-color="graphite"] { --lib-bg: #3f3f46; }
+.libTile[data-color="blue"], .swatch[data-color="blue"] { --lib-bg: #2f6fd6; }
+.libTile[data-color="teal"], .swatch[data-color="teal"] { --lib-bg: #0f8a86; }
+.libTile[data-color="green"], .swatch[data-color="green"] { --lib-bg: #3a8a3f; }
+.libTile[data-color="amber"], .swatch[data-color="amber"] { --lib-bg: #b7791f; }
+.libTile[data-color="violet"], .swatch[data-color="violet"] { --lib-bg: #6d4fc9; }
+.libTile[data-color="pink"], .swatch[data-color="pink"] { --lib-bg: #c2417a; }
+.libTile[data-color="brown"], .swatch[data-color="brown"] { --lib-bg: #8a5a3b; }
+:global([data-theme="dark"]) .libTile[data-color="graphite"], :global([data-theme="dark"]) .swatch[data-color="graphite"] { --lib-bg: #52525b; }
+.wsBtn .libTile { margin-left: -2px; }
+:global(html[data-side="rail"]) .wsBtn .libTile { margin-left: 0; }
+.libMenu { position: fixed; top: 52px; left: 12px; width: 300px; } /* fixed: the sidebar clips what overflows it */
+:global(.menu) .libRow { height: auto; min-height: 48px; padding-top: 6px; padding-bottom: 6px; gap: 10px; }
+.libText { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.libText b { font-size: 0.84375rem; line-height: 1.125rem; font-weight: 560; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.libText small { color: var(--ink-3); font-size: 0.75rem; line-height: 1rem; font-variant-numeric: tabular-nums; }
+.libCheck { width: 16px; flex: none; color: var(--ink) !important; }
+.libRow :global(.kbd) { flex: none; }
+/* you, at the top of the menu: your face, your name, and where it goes (Settings › Profile) */
+:global(.menu) .meRow { height: auto; min-height: 48px; padding-top: 6px; padding-bottom: 6px; gap: 10px; color: var(--ink); text-decoration: none; }
+.meFace { flex: none; width: 32px; height: 32px; border-radius: 50%; }
+.meChev { flex: none; width: 14px; height: 14px; color: var(--ic-3) !important; }
+.libForm { display: grid; gap: 16px; }
+.libPreview { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface-2); }
+.libPreview > b { font-size: 0.9375rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lookField { display: grid; gap: 6px; }
+.lookLabel { font-size: var(--fs-xs, 12px); font-weight: 560; color: var(--ink-2); }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--lib-bg); color: #fff; cursor: pointer; --pi: 14px; }
+.swatch svg { color: inherit; }
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--lib-bg); }
+.iconGrid { display: grid; grid-template-columns: repeat(auto-fill, 36px); gap: 4px; }
+.iconPick { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--ink-2); cursor: pointer; }
+.iconPick:hover { background: var(--surface-3); }
+.iconPick[aria-checked="true"] { border-color: var(--sel-line); background: var(--sel-soft); color: var(--sel-soft-ink); }
+.libList { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.libItem + .libItem { border-top: 1px solid var(--line); }
+.libItemRow { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.libTileBtn { padding: 0; border: 0; border-radius: 9px; background: transparent; cursor: pointer; }
+.libTileBtn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--sel-line); }
+.libName { flex: 1; min-width: 0; height: 32px; min-height: 32px; }
+.libCount { flex: none; color: var(--ink-3); font-size: 0.78125rem; font-variant-numeric: tabular-nums; }
+.libLook { display: grid; gap: 14px; padding: 4px 12px 14px 54px; }
+@media (max-width: 520px) { .libLook { padding-left: 12px; } .libCount { display: none; } }
+.plans { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.plan { display: grid; gap: 12px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.plan[data-pro] { background: var(--surface-2); }
+.planName { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9375rem; line-height: 1.25rem; font-weight: 600; color: var(--ink); }
+.planPrice { display: flex; align-items: baseline; gap: 4px; font-size: 1.375rem; line-height: 1.75rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.planPrice small { font-size: 0.84375rem; line-height: 1; font-weight: 400; color: var(--ink-2); }
+.planWhat { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 0.84375rem; line-height: 1.25rem; }
+@media (max-width: 420px) { .plans { grid-template-columns: 1fr; } }
+
+/* ---------- Design review 25 Oct, item 3: Your AI in the sidebar ---------- */
+.addRow { color: var(--side-mute); }
+.addRow:hover { color: var(--side-ink); }
+
+/* Settings › Sidebar: Compact (tighter rows, counts only where they matter: the Inbox) */
+.sidebar[data-density="compact"] .row { height: 26px; font-size: 0.8125rem; }
+.sidebar[data-density="compact"] .sh { margin-top: 10px; height: 24px; }
+.sidebar[data-density="compact"] .cnt:not(.badge) { display: none; }
+
+/* ---------- Paper style (issue #63; the Notebook direction, design system › Paper) ----------
+ * The sidebar lies on the desk (the grained paper stock behind everything); the main panel is a sheet with square
+ * corners and a soft shadow, joined to the right panel like a spread; the current page is marked by a red bar. */
+:global(:root[data-look="paper"]) .app {
+  --side-ink: #24211c; --side-icon: #6a6254; --side-mute: #5f574b; --side-hover: #ebe3d4; --side-active: transparent; --side-line: #ddd3c2; --panel-line: #e4dccd;
+  background: transparent;
+}
+:global(:root[data-look="paper"][data-theme="dark"]) .app {
+  --side-ink: #efe9de; --side-icon: #b3ab9d; --side-mute: #a69e91; --side-hover: #24221f; --side-line: #35322d; --panel-line: #35322d;
+}
+:global(:root[data-look="paper"]) .sidebar { background: transparent; }
+:global(:root[data-look="paper"]) .main { border-radius: 2px; box-shadow: var(--p-sh); }
+:global(:root[data-look="paper"]) .app:has(.aside:not(:empty)) .main { border-radius: 2px 0 0 2px; border-right: 0;
+  background-image: linear-gradient(270deg, rgb(60 45 20 / 0.07), transparent 22px); background-attachment: local; }
+:global(:root[data-look="paper"][data-theme="dark"]) .app:has(.aside:not(:empty)) .main { background-image: linear-gradient(270deg, rgb(0 0 0 / 0.35), transparent 22px); }
+:global(:root[data-look="paper"]) .row { border-radius: 0; }
+:global(:root[data-look="paper"]) .row[aria-current="page"] { background: none; box-shadow: inset 3px 0 0 var(--accent); font-weight: 600; }
+:global(:root[data-look="paper"]) .sh { font-family: var(--mono); font-size: 0.65625rem; letter-spacing: .08em; text-transform: uppercase; border-radius: 0; }
+:global(:root[data-look="paper"]) .wsBtn { border-radius: 2px; }
+/* the drawer on narrow screens lies over the page, so it needs its own paper (26 Oct: it was see-through in Paper) */
+@media (max-width: 860px) { :global(:root[data-look="paper"]) .sidebar { background: var(--bg); } }
+
+/* ---------- press (issue #80) ----------
+ * Sidebar navigation: a row under the finger takes a tint one step past the current page's grey (its own token, since in
+ * dark the shared one landed on --side-active) and its glyph dips, so the press never reads as "you are here". The
+ * small sidebar buttons scale over the same tint. In Paper the current page is a red margin rule, so a pressed row
+ * rules a pencil one. */
+.app { --side-press: color-mix(in srgb, var(--ink) 12%, transparent); }
+:global([data-theme="dark"]) .app { --side-press: color-mix(in srgb, var(--ink) 17%, transparent); }
+.row svg { transition: scale var(--dur-1) var(--ease); }
+.row:active:not([data-static="true"]) { background: var(--side-press); }
+.row:active:not([data-static="true"]) > svg { scale: .86; transition-duration: var(--dur-0); }
+:global(:root[data-look="paper"]) .row:active:not([data-static="true"]):not([aria-current="page"]) { box-shadow: inset 3px 0 0 var(--ink-3); }
+.wsBtn, .wsi, .fi, .shBtn { transition: scale var(--dur-1) var(--ease); }
+.wsBtn:active, .wsi:active, .fi:active, .shBtn:active { background: var(--side-press); transition-duration: var(--dur-0); }
+.wsi:active, .fi:active, .shBtn:active { scale: var(--press-sm); }
+
+/* ==== Paper corners: generated by tools/paper/radius.py from the rules above. Don't edit; rerun the script. ==== */
+:global(:root[data-look="paper"]) .wsi { border-radius: 2px; }
+:global(:root[data-look="paper"]) .tile { border-radius: 2px; }
+:global(:root[data-look="paper"]) .shBtn { border-radius: 2px; }
+:global(:root[data-look="paper"]) .unpin { border-radius: 2px; }
+:global(:root[data-look="paper"]) .palHint { border-radius: 2px; }
+@media (min-width: 861px) { :global(:root[data-look="paper"][data-side="rail"]) .wsi { border-radius: 2px; } }
+@media (min-width: 861px) { :global(:root[data-look="paper"][data-side="rail"]) .badge { border-radius: 2px; } }
+@media (min-width: 861px) { :global(:root[data-look="paper"][data-side="rail"]) .fi { border-radius: 2px; } }
+:global(:root[data-look="paper"]) .tip { border-radius: 2px; }
+:global(:root[data-look="paper"]) .noteIcon { border-radius: 2px; }
+:global(:root[data-look="paper"]) .libTile { border-radius: 2px; }
+:global(:root[data-look="paper"]) .libTile[data-size="20"] { border-radius: 2px; }
+:global(:root[data-look="paper"]) .libTile[data-size="32"] { border-radius: 2px; }
+:global(:root[data-look="paper"]) .iconPick { border-radius: 2px; }
+:global(:root[data-look="paper"]) .libTileBtn { border-radius: 2px; }
+/* ==== end of Paper corners ==== */

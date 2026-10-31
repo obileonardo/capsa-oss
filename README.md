@@ -1,27 +1,44 @@
-# Capsa: MCP server and `capsa`
+# Capsa
 
-Your saved prompts, skills, MCP servers and design boards, readable by your AI tools and your terminal. Read-only, offline, no dependencies.
-
-Capsa is a local-first library for what you learn about working with AI. Every item keeps its evidence: the post, video moment or README line it came from, quoted exactly. This repository is Capsa's public source. It grows in releases. Release 1 (0.1.0) has two parts:
+Capsa is a local-first library for what you learn about working with AI. Every item keeps its evidence: the post, video moment or README line it came from, quoted exactly. This repository is Capsa's public source. It grows in releases. Release 2 (0.2.0) has three parts:
 
 | Part | What it does |
 |---|---|
+| [`apps/web`](apps/web) | The Capsa app: capture a link, a post or an image, review what it holds in the Inbox, and keep what you want in the Library, with collections, projects, backup and export. Your library stays in your browser. |
 | [`packages/capsa-mcp`](packages/capsa-mcp) | A local [MCP](https://modelcontextprotocol.io) server. Claude, Codex, Cursor, VS Code and other MCP clients can search your library, read items, fill a prompt's blanks and read a board's design brief. |
 | [`packages/capsa`](packages/capsa) | The same library in your terminal: search, list, show, fill and copy. |
 
-Both read one file, `capsa-library.json`, and need no `npm install`. Neither writes files or opens a network connection; see the [security model](#security-model).
+The app writes `capsa-library.json` (**Your AI › Download the library file**); the two tools read it and need no `npm install`. Neither tool writes files or opens a network connection; see the [security model](#security-model).
 
-> **Status: early.** Version 0.1.0. The file format is `capsa.mcp.v1` and may grow, but new fields are added, not renamed. The Capsa app that writes the file comes to this repository in later releases; see the [changelog](CHANGELOG.md).
+> **Status: early.** Version 0.2.0. The app is the core of Capsa; organising, the command menu, imports, boards and the rest arrive in later releases (see the [changelog](CHANGELOG.md)). The file format is `capsa.mcp.v1` and may grow, but new fields are added, not renamed.
 
 ## Why Capsa
 
-Good prompts and tools turn up everywhere: a thread, a long video, a README. A week later you can't find them, and you can't tell whether the copy you kept is the real one. Capsa keeps the exact words and where they came from. These two tools hand that library to your AI tools and your terminal, so an item comes back with its source attached.
+Good prompts and tools turn up everywhere: a thread, a long video, a README. A week later you can't find them, and you can't tell whether the copy you kept is the real one. Capsa keeps the exact words and where they came from. The app is where you save and sort them; the two tools hand that library to your AI tools and your terminal, so an item comes back with its source attached.
 
-## Requirements
+## Run the app
+
+Node.js 24 or newer.
+
+```bash
+git clone https://github.com/obileonardo/capsa-oss.git
+cd capsa-oss/apps/web
+npm ci
+npm run dev        # http://127.0.0.1:3100
+```
+
+`npm run build` and `npm start` serve a production build on the same address.
+
+- **Where your library lives.** In your browser's storage (IndexedDB), on this device, at this address. Nothing is sent to a server: there is no Capsa account and no sync yet. Another browser, device or address starts empty.
+- **Keep a copy.** **Settings › Data › Back up** saves everything as `capsa-backup-<library>-<date>.zip`; **Restore** reads it back, on any device.
+- **What leaves your device.** Only what you ask for: with **Reading public GitHub links** on (off by default, and it asks first), the app sends a repository's address to GitHub's public API. Text in images is read on your device.
+- **Demo data** is labelled as such, and is fictional.
+
+## Requirements for the tools
 
 Node.js 20 or newer. The tests run on Node 20, 22 and 24 on Linux in CI, and were run on Node 24 on macOS for this release. Windows hasn't been checked.
 
-## Try it in a minute
+## Try the tools in a minute
 
 ```bash
 git clone https://github.com/obileonardo/capsa-oss.git
@@ -156,6 +173,14 @@ The sample file shows every field. Blanks in a prompt are written `[like this]` 
 
 ## Security model
 
+**The app**
+
+- **Local-first.** Your library is stored in the browser and never uploaded. The page's content security policy allows connections only to its own address and `api.github.com`.
+- **GitHub reading is off by default** and asks before each read. It sends only the repository's address.
+- **Saved text is shown as text.** What you capture is quoted content; the app doesn't run it, and doesn't send it to a model.
+
+**The MCP server and `capsa`**
+
 - **Read-only.** Both tools read one library file and never write files. Every server tool is marked `readOnlyHint: true` and `openWorldHint: false`.
 - **Offline.** Neither opens a network connection. Links in your library are printed, never opened.
 - **No other programs.** Only `capsa copy` starts one: your clipboard command.
@@ -180,14 +205,17 @@ The sample file shows every field. Blanks in a prompt are written `[like this]` 
 
 | Path | What's there |
 |---|---|
+| [`apps/web/`](apps/web) | The app (Next.js): `src/app` the routes, `src/components` the screens, `src/lib` the data layer and storage, `public/` the service worker, OCR and art, `verify/` its checks |
 | [`packages/capsa-mcp/`](packages/capsa-mcp) | The server (`server.mjs`), the file reader both tools share (`library.mjs`), its tests (`test.mjs`) and the sample library (`examples/`) |
 | [`packages/capsa/`](packages/capsa) | The `capsa` command (`capsa.mjs`) and its tests. It loads `library.mjs` from the folder beside it |
-| [`.github/`](.github) | CI (`npm test` on Node 20, 22 and 24) and the issue and pull request templates |
+| [`.github/`](.github) | CI (`npm test` on Node 20, 22 and 24; the app's install, typecheck, build and Node checks on Node 24) and the issue and pull request templates |
 | [`package.json`](package.json) | `npm test` for both packages |
 
 ```bash
 npm test                             # both packages; no install needed
 cd packages/capsa-mcp && npm test    # one package: runs node test.mjs
+cd apps/web && npm ci && npm run typecheck && npm run build   # the app (Node 24)
+cd apps/web && for t in capture/extract capture/rules imports/unit notify/notify search/search reuse/reuse; do node verify/$t-test.mjs; done   # the app's Node checks (Node 24, no install needed)
 ```
 
 ## Contributing
@@ -196,4 +224,4 @@ Issues and pull requests are welcome for what is in this repository. Read [CONTR
 
 ## Licence
 
-The code is under the [MIT License](LICENSE). The Capsa name and the mark are not; see [TRADEMARKS.md](TRADEMARKS.md).
+The code is under the [MIT License](LICENSE). The Capsa name, the mark and the app's artwork are not; see [TRADEMARKS.md](TRADEMARKS.md).

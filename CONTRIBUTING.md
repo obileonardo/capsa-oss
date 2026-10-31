@@ -16,7 +16,7 @@ That means:
 1. Find or open an issue. For anything bigger than a small fix, agree the approach in the issue first.
 2. Fork the repository and make a branch, for example `fix/capsa-copy-on-wayland`.
 3. Make one focused change, with a test where it's practical.
-4. Run `npm test` at the root. It needs no install.
+4. Run `npm test` at the root (no install needed). If you changed the app, also run its checks in `apps/web`: `npm run typecheck`, `npm run build` and the Node checks listed in the README.
 5. Sign off every commit: `git commit -s` ([why](#licence-and-sign-off)).
 6. Open a pull request against `main` with `Closes #<issue>`, and fill in the template.
 
@@ -24,7 +24,7 @@ Elvis squash-merges. Your branch history doesn't need to be tidy; the squash com
 
 ## Setting up
 
-You need Node.js 20 or newer and nothing else. There are no dependencies to install.
+For the MCP server and `capsa` you need Node.js 20 or newer and nothing else; there are no dependencies to install. For the app (`apps/web`) you need Node.js 24 or newer and `npm ci` in `apps/web`.
 
 ```bash
 git clone https://github.com/<you>/capsa-oss.git
@@ -35,7 +35,7 @@ npm test
 ## What a good pull request looks like
 
 - **One concern.** No unrelated reformatting.
-- **Tests.** A bug fix comes with a test in the package's `test.mjs` that fails without the fix.
+- **Tests.** A bug fix comes with a test that fails without the fix: in the package's `test.mjs`, or for the app a Node check in `apps/web/verify/`.
 - **The rules of the tools hold.** The MCP server and `capsa` stay read-only, offline and dependency-free: no file writes, no network calls, no npm dependencies. Saved text stays fenced and marked as quoted content. The tests check this.
 - **The file format stays compatible.** Add fields; don't rename or remove them.
 - **Plain words** in messages and docs. Short sentences.

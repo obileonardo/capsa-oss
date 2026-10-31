@@ -1,0 +1,10 @@
+node_modules
+.next
+next-env.d.ts
+*.tsbuildinfo
+# the feature registry, written by scripts/features.mjs (src/lib/features.ts)
+/src/features.gen.ts
+/src/feature-ids.gen.ts
+/src/features.gen.css
+/src/slots.gen/
+/public/sw-features.gen.js
