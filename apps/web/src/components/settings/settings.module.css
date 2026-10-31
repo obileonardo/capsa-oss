@@ -1,0 +1,203 @@
+/* Settings: settings in cards inside the shared reading layout (DocLayout). */
+/* one section per page (Linear-style), centred in the main panel */
+/* Profile is wider (920): the form and the library card sit apart, with a real gutter (Elvis, 27 Oct: "they are too close
+ * apart, so let's space them out"). The title above follows the same column. */
+.page { width: min(100%, var(--settings-col, 760px)); margin: 0 auto; }
+.shell[data-wide] { --settings-col: 920px; }
+.page > :first-child + .sec { margin-top: 8px; }
+.sec { margin-bottom: 40px; }
+.sec h2 + .card { margin-top: 12px; }
+.subHead { margin: 24px 0 8px; font-size: 0.8125rem; line-height: 1.25rem; font-weight: 600; color: var(--ink-2); }
+
+.card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.danger { border-color: color-mix(in srgb, var(--danger) 28%, var(--line)); }
+.row { --pi: 16px; display: flex; align-items: center; gap: 16px; padding: 16px 20px; }
+.row + .row { border-top: 1px solid var(--line); }
+.rowIcon { width: 32px; height: 32px; flex: none; display: grid; place-items: center; align-self: flex-start; border-radius: 8px; background: var(--surface-2); color: var(--ic-2); }
+.rowText, .installRow > div:first-child { flex: 1; min-width: 0; }
+.row b { display: block; font-weight: 600; font-size: 0.875rem; line-height: 1.25rem; }
+.row p { margin: 4px 0 0; color: var(--ink-3); font-size: 0.8125rem; line-height: 1.25rem; max-width: 64ch; }
+.row > :global(.btn), .row > :global(.seg) { flex: none; }
+.row > :global(.btn) { height: var(--h-md); }
+.iconPreview { display: inline-flex; gap: 3px; margin-right: 2px; }
+.installRow { padding-left: 68px; } /* text lines up with the rows that have an icon */
+.licence { margin: 12px 0 0; color: var(--ink-3); font-size: 0.75rem; line-height: 1.125rem; }
+
+/* on/off switch for reading public GitHub links */
+.switchBtn { gap: 8px; min-width: 84px; }
+.switchTrack { position: relative; width: 30px; height: 18px; flex: none; border-radius: 9px; background: var(--line-strong); transition: background var(--dur-1) var(--ease); }
+.switchKnob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / 0.25); transition: translate var(--dur-1) var(--ease); }
+.switchBtn[aria-checked="true"] .switchTrack { background: var(--sel); }
+.switchBtn[aria-checked="true"] .switchKnob { translate: 12px 0; }
+
+/* grouped settings (24 Oct): rows that edit records (collections, projects, tags), shortcuts, the icon picker as a row's icon */
+.cardOpen { overflow: visible; } /* the icon picker's menu opens below its row */
+.rowLead { flex: none; align-self: flex-start; }
+.acts { flex: none; display: flex; align-items: center; gap: 4px; }
+.acts > :global(.btn) { height: var(--h-md); }
+.acts > :global(.btn.icon) { width: 32px; color: var(--ic-2); }
+.nameLink { color: inherit; text-decoration: none; }
+.nameLink:hover { text-decoration: underline; text-underline-offset: 2px; }
+.nameInput { width: 100%; max-width: 360px; font-weight: 500; }
+.row > form.row, form.row { margin: 0; }
+.pinBtn { gap: 6px; min-width: 64px; justify-content: center; }
+.pinBtn[aria-pressed="true"] { background: var(--sel-soft); border-color: var(--sel-line); }
+.keys { margin: 0; }
+.keyRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; padding: 10px 20px; font-size: 0.875rem; line-height: 1.25rem; }
+.keyRow + .keyRow { border-top: 1px solid var(--line); }
+.keyRow dt { min-width: 0; color: var(--ink); }
+.keyRow dd { flex: none; margin: 0; }
+
+@media (max-width: 640px) {
+  .row { flex-wrap: wrap; padding: 16px; }
+  .rowText { flex-basis: calc(100% - 48px); }
+  .row > :global(.btn), .row > :global(.seg), .row > [class*="badge"], .row > .acts { margin-left: 48px; }
+  .row > :global(.seg) { max-width: calc(100% - 48px); } /* its options wrap inside the row, indent and all (320 px at 200% text) */
+  .keyRow { padding: 10px 16px; }
+  /* rows that edit a record keep their actions beside the name; the name shortens instead */
+  .row:has(> .acts) { flex-wrap: nowrap; }
+  .row:has(> .acts) > .rowText { flex: 1 1 auto; }
+  .row:has(> .acts) > .rowText b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > .acts { margin-left: 0; }
+  .pinBtn { min-width: 0; }
+  /* a switch fits beside its label */
+  .row:has(> [role="switch"]) { flex-wrap: nowrap; }
+  .row:has(> [role="switch"]) > .rowText { flex: 1 1 auto; }
+  .row > [role="switch"] { margin-left: 0; }
+  .newRow > :global(.btn) { margin-left: 0; }
+  .installRow { padding-left: 16px; }
+  .installRow > :global(.btn) { margin-left: 0; }
+}
+
+.row > b.rowText { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+.row { min-height: 64px; }
+
+/* Track C (THM-07): changeable shortcuts */
+.keyRow dt { display: grid; gap: 2px; }
+.keyDd { display: flex; align-items: center; gap: 4px; }
+.keyErr { color: var(--danger); font-size: 0.8125rem; line-height: 1.125rem; }
+.recording { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border: 1px dashed var(--sel-line); border-radius: var(--r-xs); background: var(--sel-soft); color: var(--sel-soft-ink); font-size: 0.75rem; }
+.keysFoot { margin: -16px 0 40px; }
+@media (max-width: 640px) { .keyRow { flex-wrap: wrap; } .keyDd { margin-left: auto; } }
+/* Settings › Import and the bookmarklet (Track A, 25 Oct) */
+.inlineForm { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; }
+.userInput { width: 160px; }
+.inlineForm > :global(.btn) { height: var(--h-md); }
+.progress { display: block; width: min(100%, 320px); height: 4px; margin-top: 8px; border: 0; border-radius: 2px; overflow: hidden; background: var(--surface-3); appearance: none; -webkit-appearance: none; }
+.progress::-webkit-progress-bar { background: var(--surface-3); border-radius: 2px; }
+.progress::-webkit-progress-value { background: var(--ink-2); border-radius: 2px; transition: width var(--dur-1) var(--ease); }
+.progress::-moz-progress-bar { background: var(--ink-2); border-radius: 2px; }
+.mapGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mapGrid :global(.field) > span { font-size: var(--fs-xs); font-weight: 560; color: var(--ink-2); }
+.destRow { display: flex; align-items: center; gap: 12px; font-size: 0.8125rem; color: var(--ink-2); }
+.preview { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.preview li { display: grid; gap: 2px; padding: 10px 12px; font-size: 0.8125rem; line-height: 1.125rem; }
+.preview li + li { border-top: 1px solid var(--line); }
+.preview li b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview li span { color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.preview li em { font-style: normal; color: var(--ink-3); font-size: 0.75rem; }
+.previewMore { margin: 0; color: var(--ink-3); font-size: 0.78125rem; }
+.selCount { color: var(--ink-3); font-size: 0.78125rem; }
+.triageTop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.triageSearch { flex: 1 1 220px; display: flex; align-items: center; gap: 8px; color: var(--ink-3); }
+.triageSearch :global(.input) { flex: 1; min-width: 0; height: var(--h-md); min-height: var(--h-md); }
+.checkRow { display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 0.8125rem; color: var(--ink-2); cursor: pointer; }
+.checkRow input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--ink); }
+.triage { list-style: none; margin: 0; padding: 0; max-height: min(52vh, 480px); overflow: auto; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.triage li { padding: 6px 12px; }
+.triage li + li { border-top: 1px solid var(--line); }
+.triageText { display: grid; min-width: 0; line-height: 1.125rem; }
+.triageText b { color: var(--ink); font-weight: 560; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.triageText span { color: var(--ink-3); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bookmarklet { cursor: grab; }
+@media (max-width: 640px) {
+  .inlineForm { margin-left: 48px; }
+  .userInput { width: auto; flex: 1; min-width: 0; }
+  .row:has(> .inlineForm) .inlineForm { flex: 1 1 100%; }
+  .mapGrid { grid-template-columns: 1fr; }
+  /* import rows: the pickers go under the label, like the other rows' buttons */
+  .row.importRow { flex-wrap: wrap; }
+  .row.importRow > .rowText { flex: 1 1 calc(100% - 48px); }
+  .row.importRow > .acts { margin-left: 48px; }
+}
+
+/* Groups (26 Oct): a group's page holds its sections; each opens with its icon, its name and one line saying what it
+ * covers (the only explanations in Settings, by Elvis's request), then its settings. */
+/* a jump lands the section under the top bar and the title (when it stays put), with room for its highlight: 32, then 16 */
+.sub { position: relative; isolation: isolate; margin-bottom: 48px; scroll-margin-top: calc(var(--top-h, 52px) + var(--head-h, 0px) + 48px); }
+.sub:focus { outline: none; }
+.subHeader { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.subIcon { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ic-2); }
+.subText { min-width: 0; }
+.subText h2 { margin: 0; font-size: 1.0625rem; line-height: 1.5rem; font-weight: 600; color: var(--ink); }
+.subText p { margin: 2px 0 0; color: var(--ink-3); font-size: 0.8125rem; line-height: 1.25rem; }
+.sub .sec { margin-bottom: 20px; }
+.sub .sec:last-child, .sub > .card:last-child { margin-bottom: 0; }
+.sub .subHead { margin-top: 16px; }
+.rowWrap { border-top: 1px solid var(--line); }
+.narrowSearch { display: none !important; }
+@media (max-width: 860px) { .narrowSearch { display: flex !important; margin: -12px 0 28px; height: 40px; cursor: pointer; } }
+@media (max-width: 640px) { .sub { margin-bottom: 40px; } }
+
+/* a section or setting reached from search or the sidebar glows for a moment (colour only, so reduced motion keeps it).
+ * A whole section's tint grows 32px past it on every side (Elvis, 27 Oct: "let's give it breathing space... 32 pixels to
+ * the right, to the left, to the top, and to the bottom"), drawn behind it so nothing inside moves; it fades by opacity
+ * alone. A single setting's row glows in place (its card clips anything wider, and the row has its own padding). */
+.page :global([data-flash]):not(.sub) { animation: settings-flash 1.9s var(--ease) both; border-radius: 12px; }
+@keyframes settings-flash {
+  0%, 35% { box-shadow: 0 0 0 2px var(--sel-line); background-color: var(--sel-soft); }
+  100% { box-shadow: 0 0 0 2px transparent; }
+}
+.sub[data-flash]::before {
+  content: ""; position: absolute; inset: calc(-1 * var(--flash-pad, 32px)); z-index: -1; pointer-events: none;
+  border-radius: 20px; background: var(--sel-soft); box-shadow: inset 0 0 0 1px var(--sel-line);
+  animation: settings-flash-pad 1.9s var(--ease) both;
+}
+@keyframes settings-flash-pad { 0%, 35% { opacity: 1; } 100% { opacity: 0; } }
+/* a phone's gutter is 16px: the tint keeps 32px above and below, and meets the screen's edges at the sides */
+@media (max-width: 720px) { .sub[data-flash]::before { inset: -32px -16px; border-radius: 0; box-shadow: inset 0 1px 0 var(--sel-line), inset 0 -1px 0 var(--sel-line); } }
+
+/* ---------- the page title stays put (FixedHead.tsx; Elvis, 27 Oct) ----------
+ * The heading is a band under the top bar, as wide as the panel so the sections pass under it, its words on the column.
+ * It takes the page's top padding; the column starts 12px under it (32px from title to first section, as before). Once
+ * something has gone under, the column's edge shows a hairline and a 16px fade, by opacity only: nothing moves. */
+.shell { position: relative; }
+.topMarker { position: absolute; top: 0; left: 0; width: 1px; height: 1px; pointer-events: none; }
+.head { padding: 28px 32px 20px; background: var(--surface); }
+.head[data-fixed] { position: sticky; top: var(--top-h, 52px); z-index: 9; }
+.headIn { position: relative; width: min(100%, var(--settings-col, 760px)); margin: 0 auto; }
+.headIn > div { margin-bottom: 0; }
+.headIn::after, .headIn::before { content: ""; position: absolute; left: 0; right: 0; pointer-events: none; opacity: 0; transition: opacity 160ms var(--ease); }
+.headIn::after { bottom: -20px; height: 1px; background: var(--line); }
+.headIn::before { top: calc(100% + 21px); height: 16px; background: linear-gradient(var(--surface), transparent); }
+.head[data-under] .headIn::after, .head[data-under] .headIn::before { opacity: 1; }
+.body { padding-top: 12px; }
+@media (max-width: 720px) {
+  .head { padding: 20px 16px 16px; }
+  .headIn::after { bottom: -16px; }
+  .headIn::before { top: calc(100% + 17px); }
+}
+/* Paper: the band carries the sheet's red margin rules, so they run unbroken behind the title */
+@media (min-width: 861px) {
+  :global(:root[data-look="paper"]) .head { padding-left: 64px;
+    background: linear-gradient(90deg, transparent 34px, var(--p-margin) 34px 35px, transparent 35px 38px, var(--p-margin) 38px 39px, transparent 39px), var(--surface); }
+}
+/* Style: a swatch of each (plain white; paper with its red margin rule) */
+.lookSwatch { width: 16px; height: 12px; margin-right: 2px; border: 1px solid var(--line-strong); border-radius: 2px; background: #ffffff; flex: none; }
+.lookSwatch[data-look="paper"] { background: linear-gradient(90deg, transparent 4px, rgb(217 58 43 / .55) 4px 5px, transparent 5px), #f3eee3; border-color: #cdc3b1; }
+
+/* press (issue #80): the switch's knob stretches toward where it will go, as iOS's does; the button around it takes the
+ * shared .btn press */
+.switchKnob { transform-origin: left center; transition: translate var(--dur-1) var(--ease), scale var(--dur-1) var(--ease); }
+.switchBtn[aria-checked="true"] .switchKnob { transform-origin: right center; }
+.switchBtn:active .switchKnob { scale: 1.3 1; transition-duration: var(--dur-0); }
+@media (prefers-reduced-motion: reduce) { .switchBtn:active .switchKnob { scale: none; } }
+
+/* ==== Paper corners: generated by tools/paper/radius.py from the rules above. Don't edit; rerun the script. ==== */
+:global(:root[data-look="paper"]) .card { border-radius: 2px; }
+:global(:root[data-look="paper"]) .rowIcon { border-radius: 2px; }
+:global(:root[data-look="paper"]) .switchTrack { border-radius: 2px; }
+:global(:root[data-look="paper"]) .subIcon { border-radius: 2px; }
+:global(:root[data-look="paper"]) .page :global([data-flash]):not(.sub) { border-radius: 2px; }
+:global(:root[data-look="paper"]) .sub[data-flash]::before { border-radius: 2px; }
+/* ==== end of Paper corners ==== */

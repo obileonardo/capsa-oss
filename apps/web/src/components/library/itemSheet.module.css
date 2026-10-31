@@ -1,0 +1,111 @@
+/* The item sheet (ItemSheet.tsx, issue #80): a card's ⋯ on a phone. References on the taste board: Notion's and
+ * Obsidian's grouped action sheets (inset groups on a tinted sheet), Spotify's and ElevenReader's item header (glyph,
+ * title, type), Etsy's and Tripadvisor's collection rows (tick on the right, Create new in the list), Klarna's close.
+ * Classic: a tinted sheet with white inset groups, 50px rows, 18px top corners concentric with the 10px groups.
+ * Paper: a slip of card stock, square corners like every Paper surface (its Filters sheet too), the header over a double
+ * red rule like Paper's dialogs, and the groups as ruled ledger lines rather than boxes. */
+
+.sheet {
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; background: transparent; color: var(--ink);
+  --sheet-bg: var(--bg); --group-bg: var(--surface); --sheet-line: var(--line);
+}
+.sheet:not([open]) { display: none; }
+.sheet::backdrop { background: transparent; }
+:global([data-theme="dark"]) .sheet { --sheet-bg: var(--surface); --group-bg: var(--surface-2); }
+/* the page behind doesn't scroll while the sheet is up */
+:global(html):has(.sheet[open]) { overflow: hidden; }
+
+.scrim { position: absolute; inset: 0; background: var(--overlay); opacity: 0; transition: opacity 460ms var(--ease-drawer); -webkit-tap-highlight-color: transparent; }
+.panel {
+  position: relative; display: flex; flex-direction: column; width: 100%; max-width: 560px; margin: 0 auto;
+  max-height: calc(100dvh - 40px - env(safe-area-inset-top, 0px));
+  border-radius: 18px 18px 0 0; background: var(--sheet-bg); box-shadow: 0 -10px 40px rgb(0 0 0 / 0.14);
+  transform: translateY(100%); transition: transform 460ms var(--ease-drawer); will-change: transform;
+}
+.panel:focus { outline: none; } /* focus rests here after a touch open; the rows show their own ring */
+.sheet[data-state="open"] .scrim { opacity: 1; }
+.sheet[data-state="open"] .panel { transform: none; }
+/* leaving is quicker than arriving: the system is answering, not presenting */
+.sheet[data-state="closing"] .scrim, .sheet[data-state="closing"] .panel { transition-duration: 280ms; }
+.panel[data-dragging] { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .panel, .sheet[data-state="open"] .panel { transform: none; opacity: 0; transition: opacity 160ms ease; }
+  .sheet[data-state="open"] .panel { opacity: 1; }
+  .sheet[data-state="closing"] .panel { opacity: 0; }
+}
+
+/* header: the handle, the item's glyph, title and type, and Close. The whole header is the drag zone. */
+.head {
+  position: relative; flex: none; display: grid; grid-template-columns: 40px minmax(0, 1fr) 44px; align-items: center; gap: 12px;
+  padding: 22px 8px 14px 16px; touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none;
+}
+.grab { position: absolute; top: 7px; left: 50%; translate: -50% 0; width: 36px; height: 5px; border-radius: 3px; background: var(--line-strong); }
+.glyph { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r-lg); background: var(--group-bg); border: 1px solid var(--sheet-line); }
+.glyph svg { --pi: 22px !important; } /* the type glyph sets its own 16px inline */
+.titles { min-width: 0; display: grid; gap: 1px; }
+.title { margin: 0; font-size: 0.9375rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.type { margin: 0; color: var(--ink-3); font-size: 0.8125rem; line-height: 1.3; }
+.close { position: relative; width: 44px; height: 44px; display: grid; place-items: center; border: 0; padding: 0; background: transparent; color: var(--ink-2); cursor: pointer; --pi: 16px; }
+.close::before { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 7%, transparent); transition: scale var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+.close svg { position: relative; }
+.close:active::before { scale: .9; background: var(--press-fill); transition-duration: var(--dur-0); }
+.close:focus-visible { outline: none; }
+.close:focus-visible::before { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 18px;
+  padding: 2px 12px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+/* groups keep their height when the list is long (a clipped group could otherwise shrink to nothing); the body scrolls */
+.body > * { flex: none; }
+.group { display: grid; gap: 6px; min-width: 0; }
+.groupHead { margin: 0; padding: 0 16px; color: var(--ink-3); font-size: 0.8125rem; font-weight: 600; }
+.rows { display: grid; min-width: 0; overflow: hidden; border-radius: var(--r-lg); background: var(--group-bg); border: 1px solid var(--sheet-line); }
+.note { margin: 0; padding: 14px 16px; color: var(--ink-3); font-size: 0.875rem; }
+
+/* rows: 50px, a 20px glyph, the label, and a trailing tick for what's on. Separators start at the label, as on iOS. */
+.row {
+  position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; min-height: 50px; padding: 0 16px;
+  border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 0.9375rem; text-align: left; cursor: pointer; --pi: 20px;
+}
+.row + .row::before, .row + .form::before, .form + .row::before { content: ''; position: absolute; top: 0; left: 48px; right: 0; height: 1px; background: var(--sheet-line); }
+.row > svg { flex: none; color: var(--ic-2); }
+.label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tick { flex: none; width: 20px; height: 20px; display: grid; place-items: center; color: var(--ink); --pi: 18px; }
+.row:active { background: var(--press-fill); }
+.row:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+.row[aria-pressed="true"] > svg:first-child { color: var(--ic-1); }
+/* Copy's confirmation: the glyph becomes a tick and the label says Copied, then the sheet goes */
+.row[data-done] { color: var(--ink); }
+.row[data-done] > svg:first-child { color: var(--ok); animation: tick-in var(--dur-2) var(--ease); }
+@keyframes tick-in { from { scale: .5; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+/* New collection, in place: 16px text so iOS doesn't zoom the page into the field */
+.form { position: relative; display: flex; align-items: center; gap: 8px; min-height: 58px; padding: 8px 8px 8px 16px; }
+.form input { flex: 1; min-width: 0; height: 40px; font-size: 1rem; }
+.form button { height: 40px; padding: 0 14px; font-size: 0.9375rem; }
+
+/* ---------- Paper ---------- */
+:global(:root[data-look="paper"]) .sheet { --sheet-bg: var(--p-card); --group-bg: transparent; --sheet-line: var(--p-rule); }
+:global(:root[data-look="paper"]) .panel { box-shadow: 0 -12px 30px -14px rgb(60 45 20 / 0.45); border-top: 1px solid var(--line-strong); }
+:global(:root[data-look="paper"][data-theme="dark"]) .panel { box-shadow: 0 -12px 30px -12px rgb(0 0 0 / 0.8); }
+:global(:root[data-look="paper"]) .head { margin: 0 16px; padding-left: 0; padding-right: 0; border-bottom: 4px double var(--p-margin); grid-template-columns: 40px minmax(0, 1fr) 44px; }
+:global(:root[data-look="paper"]) .grab { background: var(--ink-4); height: 3px; }
+:global(:root[data-look="paper"]) .glyph { background: transparent; border-color: var(--line-strong); }
+:global(:root[data-look="paper"]) .title { font-family: var(--serif-title); font-size: 1.1875rem; font-weight: 500; letter-spacing: 0; }
+:global(:root[data-look="paper"]) .close::before { background: transparent; border: 1px solid var(--line-strong); }
+:global(:root[data-look="paper"]) .body { padding-left: 16px; padding-right: 16px; gap: 20px; padding-top: 12px; }
+:global(:root[data-look="paper"]) .groupHead { padding: 0; font-family: var(--mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+:global(:root[data-look="paper"]) .rows { border: 0; border-top: 1px solid var(--ink); border-radius: 0; background: none; }
+:global(:root[data-look="paper"]) .body > .rows:first-child { border-top: 0; } /* the header's double rule already closes it off */
+:global(:root[data-look="paper"]) .row, :global(:root[data-look="paper"]) .form { border-bottom: 1px solid var(--p-rule); }
+:global(:root[data-look="paper"]) .row { padding: 0 4px; }
+:global(:root[data-look="paper"]) .form { padding-left: 4px; padding-right: 0; }
+:global(:root[data-look="paper"]) .row::before, :global(:root[data-look="paper"]) .form::before { display: none; }
+:global(:root[data-look="paper"]) .tick { color: var(--p-red-text); }
+
+/* ==== Paper corners: generated by tools/paper/radius.py from the rules above. Don't edit; rerun the script. ==== */
+:global(:root[data-look="paper"]) .panel { border-radius: 2px 2px 0 0; }
+:global(:root[data-look="paper"]) .grab { border-radius: 2px; }
+/* ==== end of Paper corners ==== */

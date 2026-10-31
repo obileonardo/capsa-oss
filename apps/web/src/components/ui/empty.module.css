@@ -1,0 +1,22 @@
+/* Empty states: drawing 24 · title 24 · actions. */
+.scene { position: relative; flex: 1; min-height: max(360px, calc(var(--main-h, 100vh) - 240px)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px 16px 6vh; }
+.scene[data-compact] { min-height: 260px; padding: 32px 16px; }
+.draw { width: 120px; height: 84px; margin-bottom: 24px; color: var(--ink-4); }
+.hero { margin-bottom: 8px; } /* the art carries its own air below the ground line */
+.art { margin-bottom: 4px; } /* an illustration: its frame already includes margin */
+.draw * { vector-effect: non-scaling-stroke; }
+.title { margin: 0; font: 500 28px/34px var(--serif-title); letter-spacing: -.02em; color: var(--ink); overflow-wrap: anywhere; }
+.actions { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+/* the one thing to do on an empty page: the Large button (#128) */
+.actions :global(.btn) { height: var(--h-lg); padding: 0 16px; border-radius: var(--r-md); font-size: var(--fs-md); }
+.actions :global(.btn.primary) :global(.kbd) { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .2); color: inherit; }
+.scatter { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.scatter svg { position: absolute; --pi: 22px; stroke-width: 1.5; color: color-mix(in srgb, var(--ink-4) 45%, transparent); }
+@media (max-width: 760px) {
+  .title { font-size: 1.5rem; line-height: 1.875rem; }
+  .scatter svg:nth-child(n+7) { display: none; }
+  .actions :global(.btn) { flex: 1 1 auto; max-width: 100%; justify-content: center; }
+  /* a label too long for the line (320 px at 200% text) wraps inside its button, which grows to fit */
+  .actions :global(.btn) { height: auto; min-height: var(--h-lg); padding-block: 8px; white-space: normal; text-wrap: balance; }
+}
+:global([data-theme="dark"]) .actions :global(.btn.primary) :global(.kbd) { background: rgb(0 0 0 / .08); border-color: rgb(0 0 0 / .18); }

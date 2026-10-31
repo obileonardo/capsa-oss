@@ -1,0 +1,183 @@
+/* Inbox in the new shell (Stage 3, mockup design-references/mockups/inbox.html). Page frame, heading, badges and the
+ * right panel come from components/shell/page.module.css; this file holds the list rows and the panel's review parts.
+ * Spacing scale: 4 · 8 · 12 · 16 · 24 px. */
+/* --ok on --ok-soft measures 4.50:1, which axe rounds below AA at 11.5 px; nudge it toward ink. */
+.root :global(.tag.ok), .panelFix :global(.tag.ok) { color: color-mix(in srgb, var(--ok) 85%, var(--ink)); }
+.summary { color: var(--ink-3); }
+
+.linkBtn { border: 0; background: none; padding: 0; color: var(--link); font-weight: 520; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- the pipeline board: four columns + the review panel, each one fifth of the width ---------- */
+/* the page fills the panel's height so each column (and the panel) scrolls on its own */
+.root[data-board] { height: var(--main-h, 100vh); min-height: 0; overflow: hidden; }
+.bodyBoard { display: flex; flex-direction: column; min-height: 0; padding-bottom: 0 !important; }
+.bodyBoard > :first-child { margin-bottom: 20px; }
+.board { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; padding-bottom: 20px; }
+/* the columns end above the capture box: it sits in the page flow under the board (sticky), never over a column */
+.col { position: relative; display: flex; flex-direction: column; min-height: 0; border-radius: 12px; background: var(--surface-2); border: 1px solid transparent; }
+/* the drop highlight is a layer under the cards that fades in (only opacity animates) */
+.col::before { content: ''; position: absolute; inset: -1px; border-radius: inherit; background: var(--sel-soft); box-shadow: inset 0 0 0 1px var(--sel-line); opacity: 0; transition: opacity var(--dur-2) var(--ease); pointer-events: none; }
+.col > * { position: relative; }
+.colHead { display: flex; align-items: center; gap: 8px; min-height: 40px; flex: none; margin: 0; padding: 0 12px 0 14px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); }
+.colCount { min-width: 20px; height: 20px; padding: 0 6px; display: inline-grid; place-items: center; border-radius: 6px; background: var(--surface); color: var(--ink-2); font-size: 0.75rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+/* The list scrolls, so it clips everything outside its padding box. The cards' rings sit outside their border box (focus:
+ * 2 px outline + 2 px offset; selected: a 1 px ring; hover: the shadow), so the list keeps RING px of padding on every side
+ * that has none of its own; without it the top card's ring was cut off ("the cutout", 24 Oct). The head is 4 px shorter,
+ * so the first card stays where it was. verify/inbox checks every column's top card ring against its list's clip box. */
+.cards { --ring: 4px; list-style: none; margin: 0; padding: var(--ring) 8px 12px; scroll-padding: var(--ring) 0 12px; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 8px; overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; }
+/* while dragging: the column under the card lights up; a column that won't take it fades */
+.board[data-dragging] .col[data-drop="ok"][data-over]::before { opacity: 1; }
+.board[data-dragging] .col[data-drop="no"] > * { opacity: .5; transition: opacity var(--dur-2) var(--ease); }
+/* while a card is dragged, the capture box makes way for the bin (Bin.tsx) at the bottom centre */
+.root :global([data-capture-box]) { transition: opacity var(--dur-2) var(--ease); }
+.root[data-dragging] :global([data-capture-box]) { opacity: 0; pointer-events: none; }
+/* the gap a dragged card will land in */
+.gap { border-radius: var(--r-xl); background: color-mix(in srgb, var(--sel) 6%, transparent); box-shadow: inset 0 0 0 1px var(--sel-line); }
+@media (prefers-reduced-motion: no-preference) { .gap { animation: gap-in var(--dur-2) var(--ease); } }
+@keyframes gap-in { from { opacity: 0; } }
+
+/* cards: source icon + time, title (two lines at most), one meta line, a badge only when the user is needed */
+.cardItem { position: relative; }
+.cardItem[data-lift="landing"] { opacity: 0; }
+/* where a dragged card came from (Elvis, 24 Oct): its slot keeps its size as a dashed light-grey frame with a plus, so
+   it's clear the card can be dropped back. It stays while the card is over another column too. */
+.cardItem[data-lift="held"] > *, .cardItem[data-lift="gone"] > * { visibility: hidden; }
+.cardItem[data-lift="held"]::before, .cardItem[data-lift="gone"]::before {
+  content: ''; position: absolute; inset: 0; border-radius: var(--r-xl); border: 1.5px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
+}
+.cardItem[data-lift="held"]::after, .cardItem[data-lift="gone"]::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; translate: -50% -50%; color: var(--ink-4); opacity: .75;
+  background: linear-gradient(currentColor, currentColor) center / 18px 1.75px no-repeat, linear-gradient(currentColor, currentColor) center / 1.75px 18px no-repeat;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cardItem[data-lift="held"]::before, .cardItem[data-lift="held"]::after { animation: gap-in var(--dur-2) var(--ease); }
+}
+.card {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 10px 12px 12px; border-radius: var(--r-xl); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); box-shadow: 0 1px 1px rgb(0 0 0 / .03); cursor: pointer;
+  -webkit-user-drag: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+.card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-1); }
+.card[aria-current="true"] { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel); }
+.card[data-draggable] { cursor: grab; }
+.card[data-draggable]:active { cursor: grabbing; }
+.cardTop { display: flex; align-items: center; gap: 6px; min-height: 20px; padding-right: 28px; --pi: 14px; }
+.kind { flex: none; color: var(--ic-3); }
+.card[data-unread="true"] .kind { color: var(--ic-2); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-2); flex: none; }
+.time { margin-left: auto; font-size: 0.71875rem; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.title { font-size: 0.8125rem; line-height: 1.125rem; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.card[data-unread="true"] .title { font-weight: 600; color: var(--ink); }
+.card[data-done] .title { color: var(--ink-3); }
+.reason { font-size: 0.75rem; line-height: 1rem; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.reason[data-tone="warn"] { color: var(--warn); }
+.card > :global(span[data-tone]):not(.reason) { justify-self: start; margin-top: 4px; }
+.cardMenu { position: absolute; top: 6px; right: 6px; }
+.cardMenu > :global(.btn) { width: 24px; height: 24px; min-height: 24px; opacity: 0; transition: opacity var(--dur-1); }
+.cardItem:hover .cardMenu > :global(.btn), .cardItem:focus-within .cardMenu > :global(.btn), .cardMenu > :global(.btn[aria-expanded="true"]) { opacity: 1; }
+.moveMenu { right: 0; top: calc(100% + 4px); min-width: 180px; }
+.moveHead { margin: 0; padding: 6px 8px 4px; font-size: 0.6875rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.moveMenu button[disabled] { color: var(--ink-4); cursor: not-allowed; }
+.preview { width: auto !important; margin: 0 !important; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; border-radius: 12px !important; padding-bottom: 112px; }
+/* the review panel is one fifth wide here: a smaller title and tighter padding */
+.preview > div { padding: 16px; gap: 12px; }
+.preview h2 { font-size: 1.375rem; line-height: 1.625rem; }
+
+/* narrow screens: the columns become a horizontal strip that swipes, one column a screen; cards open the full review */
+@media (max-width: 1099.98px) {
+  .root[data-board] { height: auto; overflow: visible; }
+  .board { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; margin: 0 -16px; padding: 0 16px 20px; scroll-padding: 0 16px; }
+  /* end each column above the floating capture box (its height plus a gap), so no card sits behind it, and on a phone above
+   * the Ask face too, which rides on the bar (#85): the columns give up that room and the bar keeps it above itself, so the
+   * page is no taller than before */
+  .col { flex: 0 0 min(86%, 340px); scroll-snap-align: start; max-height: calc(var(--main-h, 100vh) - 280px - var(--ask-cap-room, 0px)); min-height: 260px; }
+  .root :global([data-capture-box]) { margin-top: var(--ask-cap-room, 0px); }
+  .cardMenu > :global(.btn) { opacity: 1; }
+}
+
+/* right panel: review in place */
+.pvLink { display: inline-flex; align-items: center; gap: 4px; color: var(--link); font-size: 0.78125rem; overflow-wrap: anywhere; }
+.pvLink:hover { text-decoration: underline; }
+.pvLink svg { width: 12px; height: 12px; flex: none; }
+.cands { display: flex; flex-direction: column; gap: 8px; }
+.sechead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; } /* Skip all drops under the heading in a narrow preview at large text */
+.candList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cand { display: grid; grid-template-columns: 16px auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.cand[data-on="true"] { border-color: var(--sel-line); box-shadow: 0 0 0 1px var(--sel-line); }
+.candCheck { display: grid; place-items: center; }
+.candCheck input { width: 16px; height: 16px; margin: 0; accent-color: var(--sel); }
+.candTitle { min-width: 0; padding: 0; border: 0; background: none; color: var(--ink); font: 500 13.5px/20px var(--font); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.candTitle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.candWhere { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; }
+.evc { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.evtop { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+.evof { font-size: 0.8125rem; color: var(--ink-2); }
+.evof b { color: var(--ink); font-weight: 600; }
+.evfor { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 0.84375rem; font-weight: 500; }
+.evhow { margin: 0; }
+.srctext { margin: 0; padding: 16px; max-height: 300px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); font: 12.5px/1.7 var(--font-code); color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.srctext > span:first-child { display: block; margin-bottom: 8px; font-family: var(--font); }
+.srctext mark { background: #fde68a; color: #111; border-radius: 3px; padding: 1px 2px; box-shadow: 0 0 0 1px #f2c94c; }
+:global([data-theme="dark"]) .srctext mark { background: #6b5310; color: #fff7d6; box-shadow: none; }
+.evquote { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note { margin: 0; font-size: 0.75rem; line-height: 1.125rem; color: var(--ink-3); }
+.dest { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.78125rem; color: var(--ink-3); }
+.dest svg { flex: none; color: var(--ic-3); }
+.dest b { color: var(--ink); font-weight: 500; }
+.pvQuote { margin: 0; display: grid; gap: 8px; }
+.pvQuote blockquote { overflow-wrap: anywhere; white-space: pre-wrap; margin: 0; }
+.pvKept { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.pvKept a { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; font-size: 0.8125rem; }
+.pvKept a:hover { background: var(--hover); }
+.pvKept a span:last-of-type { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* empty: one centred composition in the space above the floating capture box, a little above the middle.
+   Rhythm (4 px scale): icon 16 · heading 24 · action */
+.bodyEmpty { display: flex; flex-direction: column; }
+.emptyWrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 0 6vh; }
+.emptyIcon { width: 40px; height: 40px; margin-bottom: 16px; border-radius: var(--r-lg); display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); box-shadow: var(--shadow-1); }
+.emptyIcon { --pi: 20px; }
+.emptyWrap h2 { margin: 0; font-family: var(--serif-title); font-size: 1.75rem; line-height: 2.125rem; font-weight: 500; letter-spacing: -0.02em; }
+.emptyAction { margin-top: 24px; }
+@media (max-width: 640px) {
+  .emptyWrap { justify-content: flex-start; padding: 24px 0 0; }
+  .emptyWrap h2 { font-size: 1.5rem; line-height: 1.875rem; }
+  .emptyAction { align-self: stretch; justify-content: center; }
+}
+
+
+/* the review panel at one fifth: candidates stack (check + type on the first line, the title under it) */
+.preview .cand { grid-template-columns: 16px minmax(0, 1fr); grid-template-areas: "check tag" ". title" ". where"; row-gap: 4px; column-gap: 10px; padding: 10px 12px; }
+.preview .candCheck { grid-area: check; }
+.preview .cand > :global(.tag) { grid-area: tag; justify-self: start; }
+.preview .candTitle { grid-area: title; white-space: normal; }
+.preview .candWhere { grid-area: where; white-space: normal; }
+.preview .evtop { flex-wrap: wrap; }
+/* an empty column: a small illustration and a short title, centred in the whole column */
+.col > .colEmpty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; color: var(--ink-3); pointer-events: none; transition: opacity var(--dur-2) var(--ease); }
+.colEmpty[data-hidden] { opacity: 0; }
+.colEmpty p { margin: 0; font-size: 0.8125rem; line-height: 1.125rem; font-weight: 500; color: var(--ink-3); text-align: center; }
+.pvLink:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Track C (REV-08): snoozed cards wait at the bottom of Ready to review, under a quiet heading */
+.snoozeHead { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 0 4px; font-size: 0.75rem; font-weight: 600; color: var(--ink-3); }
+.snoozeHead > span:last-child { font-weight: 500; font-variant-numeric: tabular-nums; }
+.card[data-snoozed] .title { color: var(--ink-2); }
+.card[data-snoozed] { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+
+/* press (issue #80): a card sinks a little and settles flat (it keeps the grab cursor when it can be dragged); on touch
+ * the sink waits 60ms so a finger starting to scroll the column never flashes it */
+.card { transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease), scale var(--dur-1) var(--ease); }
+.card:active:not(:has(button:active, input:active)) { scale: var(--press-lg); box-shadow: none; transition-duration: var(--dur-0); }
+@media (hover: none) { .card:active:not(:has(button:active, input:active)) { transition-delay: 60ms; } }
+
+/* ==== Paper corners: generated by tools/paper/radius.py from the rules above. Don't edit; rerun the script. ==== */
+:global(:root[data-look="paper"]) .col { border-radius: 2px; }
+:global(:root[data-look="paper"]) .colCount { border-radius: 2px; }
+:global(:root[data-look="paper"]) .preview { border-radius: 2px !important; }
+:global(:root[data-look="paper"]) .evc { border-radius: 2px; }
+:global(:root[data-look="paper"]) .srctext mark { border-radius: 2px; }
+:global(:root[data-look="paper"]) .pvKept a { border-radius: 2px; }
+/* ==== end of Paper corners ==== */
