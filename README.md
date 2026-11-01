@@ -222,6 +222,11 @@ cd apps/web && for t in capture/extract capture/rules imports/unit notify/notify
 
 Issues and pull requests are welcome for what is in this repository. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: every commit is signed off under the [DCO](DCO). For security problems, see [SECURITY.md](SECURITY.md).
 
+## Contributors
+
+- Elvis Obi ([@obileonardo](https://github.com/obileonardo)), maintainer
+- [@ChimeXXD](https://github.com/ChimeXXD)
+
 ## Licence
 
 The code is under the [MIT License](LICENSE). The Capsa name, the mark and the app's artwork are not; see [TRADEMARKS.md](TRADEMARKS.md).
