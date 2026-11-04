@@ -226,6 +226,7 @@ Issues and pull requests are welcome for what is in this repository. Read [CONTR
 
 - Elvis Obi ([@obileonardo](https://github.com/obileonardo)), maintainer
 - [@ChimeXXD](https://github.com/ChimeXXD)
+- [@andikanbassey](https://github.com/andikanbassey)
 
 ## Licence
 
